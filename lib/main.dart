@@ -7,8 +7,8 @@ import 'dart:ui';
 import 'package:animations/animations.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
@@ -20,10 +20,11 @@ import 'package:shajyy/errorpage.dart';
 import 'package:shajyy/new.dart';
 import 'package:wave/config.dart';
 import 'package:wave/wave.dart';
+import 'package:http/http.dart' as http;
 
 void main(List<String> args) async {
   await WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp();
+  // Firebase.initializeApp();
   runApp(MaterialApp(
     home: MyApp(),
     title: 'Shajyy',
@@ -39,7 +40,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  //  Here are all initial values
+  // initial values
   Timer? timer;
   String fid = '';
   String Arabicname = 'loading';
@@ -48,57 +49,62 @@ class _MyAppState extends State<MyApp> {
   String? text;
   bool isListening = false;
   bool isLoading = false;
-
+  bool timerSt = false;
   // This controller is for handle the voice which we say
   TextEditingController controller = TextEditingController();
 
   final recorder = FlutterSoundRecorder();
   bool isRecorderReady = false;
-  int seconds = 5;
-
+  int seconds = 8;
   void startTimer() {
     timer = Timer.periodic(Duration(seconds: 1), (_) async {
       if (seconds > 0) {
         setState(() {
           seconds--;
         });
-      } else if (seconds == 25) {
-        // here we call the fastApi
-        // setState(() {
-        //   isListening=!isListening;
-        // });
-        // timer!.cancel();
-        // await stop();
-      } else if (seconds == 20) {
-        //  here we call the fastApi
-        // setState(() {
-        //   isListening=!isListening;
-        // });
-        // timer!.cancel();
-        // await stop();
-      } else if (seconds == 15) {
-        //   here we call the fastApi
-        // setState(() {
-        //   isListening=!isListening;
-        // });
-        // timer!.cancel();
-        // await stop();
-      } else if (seconds == 10) {
-        //  here we call the fastApi
-        // setState(() {
-        //   isListening=!isListening;
-        // });
-        // timer!.cancel();
-        // await stop();
-      } else if (seconds == 5) {
-        // dear here we call the fastApi
-
+        if (seconds == 6) {
+          print('This is the 10');
+          // here we call the fastApi
+          // setState(() {
+          //   isListening=!isListening;
+          // });
+          // timer!.cancel();
+          // await stop();
+          // } else if (seconds == 8) {
+          //   //  here we call the fastApi
+          //   // setState(() {
+          //   //   isListening=!isListening;
+          //   // });
+          //   // timer!.cancel();
+          //   // await stop();
+        } else if (seconds == 6) {
+          print('This is the 6');
+          //   //   here we call the fastApi
+          //   // setState(() {
+          //   //   isListening=!isListening;
+          //   // });
+          //   // timer!.cancel();
+          //   // await stop();
+        } else if (seconds == 4) {
+          print('This is the 4');
+          //   //  here we call the fastApi
+          //   // setState(() {
+          //   //   isListening=!isListening;
+          //   // });
+          //   // timer!.cancel();
+          //   // await stop();
+        } else if (seconds == 2) {
+          print('This is the 2');
+          //   // here we here we call the fastApi
+          //
+        }
       } else {
         setState(() {
           isListening = !isListening;
         });
-        timer!.cancel();
+        timer?.cancel();
         await stop();
+        print('This is the ZERO');
       }
     });
   }
@@ -106,20 +112,16 @@ class _MyAppState extends State<MyApp> {
   Future record() async {
     if (!isRecorderReady) return;
     await recorder.startRecorder(
-      toFile: 'audio.wav',
+      toFile: 'audio',
     );
   }
 
   Future stop() async {
     if (!isRecorderReady) return;
-    final path = await recorder.stopRecorder().whenComplete(() {
-      setState(() {
-        isLoading = true;
-      });
-    });
+    final path = await recorder.stopRecorder();
     final audioFiles = File(path!);
-
     print('Recorder Audio: $audioFiles');
+
     //Here we will change it to the FastAPI instead of firebase which was just for testing
     //uploadAudioToStorage(audioFiles);
   }
@@ -132,7 +134,7 @@ class _MyAppState extends State<MyApp> {
     }
     await recorder.openRecorder();
     isRecorderReady = true;
-    recorder.setSubscriptionDuration(Duration(milliseconds: 500));
+    //  recorder.setSubscriptionDuration(Duration(milliseconds: 200));
   }
 
   // uploadAudioToStorage(File audioFile) async {
@@ -160,6 +162,17 @@ class _MyAppState extends State<MyApp> {
   //   }
   // }
 
+  uploadAudioToAPI(File audioFile) async {
+    //Inside parse we will put the fastAPI http link
+    Uri addressUri = Uri.parse('https:\\fastapi.com');
+    final audioUploadRequest = http.MultipartRequest('Post', addressUri);
+    final file = await http.MultipartFile.fromString('Audio', audioFile.path);
+
+    //  var request = http.MultipartFile.Request('POST', addressUri);
+    //  var picture = http.MultipartFile.fromBytes('Audio', (await audioFile).)
+    // request.files.add
+  }
+
   @override
   void initState() {
     super.initState();
@@ -178,7 +191,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final isRunning = timer == null ? false : timer!.isActive;
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
       body:
@@ -354,10 +366,16 @@ class _MyAppState extends State<MyApp> {
                         children: [
                           InkWell(
                             onTap: () async {
-                              startTimer();
                               setState(() {
                                 isListening = !isListening;
+                                if (isListening)
+                                  startTimer();
+                                else {
+                                  timer?.cancel();
+                                  seconds = 8;
+                                }
                               });
+
                               if (recorder.isRecording) {
                                 await stop();
                               } else {

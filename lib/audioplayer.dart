@@ -1,5 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -28,37 +28,37 @@ class _AudioState extends State<Audio> {
     return [if (duration.inHours > 0) hours, minutes, seconds].join(':');
   }
 
-  Future setAudio() async {
-    audioplayer.setReleaseMode(ReleaseMode.LOOP);
-    await FirebaseFirestore.instance
-        .collection('audio')
-        .where('value', isEqualTo: '1')
-        .get()
-        .then((QuerySnapshot snapshot) {
-      snapshot.docs.forEach((DocumentSnapshot doc) {
-        var idid = doc.id;
-        setState(() {
-          fid = idid;
-        });
-      });
-    }).whenComplete(() async {
-      var vari =
-          await FirebaseFirestore.instance.collection('audio').doc(fid).get();
-      setState(() {
-        getaudiofile = vari.data()?['audio'];
-      });
-    });
+  // Future setAudio() async {
+  //   audioplayer.setReleaseMode(ReleaseMode.LOOP);
+  //   await FirebaseFirestore.instance
+  //       .collection('audio')
+  //       .where('value', isEqualTo: '1')
+  //       .get()
+  //       .then((QuerySnapshot snapshot) {
+  //     snapshot.docs.forEach((DocumentSnapshot doc) {
+  //       var idid = doc.id;
+  //       setState(() {
+  //         fid = idid;
+  //       });
+  //     });
+  //   }).whenComplete(() async {
+  //     var vari =
+  //         await FirebaseFirestore.instance.collection('audio').doc(fid).get();
+  //     setState(() {
+  //       getaudiofile = vari.data()?['audio'];
+  //     });
+  //   });
 
-    //String url =
-    //    'https://firebasestorage.googleapis.com/v0/b/shajyy-522d2.appspot.com/o/chatAudios%2F1650386167606?alt=media&token=ef6b0480-b1cd-45ac-861b-24e6fb8f3c6e';
-    //  setState(() {
-    //    url2=url;
-    //  });
-    audioplayer.setUrl(getaudiofile);
-    setState(() {
-      isLoading = false;
-    });
-  }
+  //String url =
+  //    'https://firebasestorage.googleapis.com/v0/b/shajyy-522d2.appspot.com/o/chatAudios%2F1650386167606?alt=media&token=ef6b0480-b1cd-45ac-861b-24e6fb8f3c6e';
+  //  setState(() {
+  //    url2=url;
+  //  });
+  //   audioplayer.setUrl(getaudiofile);
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _AudioState extends State<Audio> {
       isLoading = true;
     });
     super.initState();
-    setAudio();
+//    setAudio();
 
     audioplayer.onPlayerStateChanged.listen((state) {
       setState(() {
@@ -90,7 +90,7 @@ class _AudioState extends State<Audio> {
   @override
   void dispose() async {
     audioplayer.dispose();
-    await FirebaseFirestore.instance.collection('audio').doc(fid).delete();
+    // await FirebaseFirestore.instance.collection('audio').doc(fid).delete();
     super.dispose();
   }
 
