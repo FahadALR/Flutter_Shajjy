@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -121,9 +122,8 @@ class _MyAppState extends State<MyApp> {
     final path = await recorder.stopRecorder();
     final audioFiles = File(path!);
     print('Recorder Audio: $audioFiles');
-
     //Here we will change it to the FastAPI instead of firebase which was just for testing
-    //uploadAudioToStorage(audioFiles);
+    uploadAudioToAPI(audioFiles);
   }
 
   Future initRecorder() async {
@@ -137,7 +137,7 @@ class _MyAppState extends State<MyApp> {
     //  recorder.setSubscriptionDuration(Duration(milliseconds: 200));
   }
 
-  // uploadAudioToStorage(File audioFile) async {
+  // uploadAudioToDB(File audioFile) async {
   //   try {
   //     final ref = FirebaseStorage.instance
   //         .ref()
@@ -165,12 +165,18 @@ class _MyAppState extends State<MyApp> {
   uploadAudioToAPI(File audioFile) async {
     //Inside parse we will put the fastAPI http link
     Uri addressUri = Uri.parse('https:\\fastapi.com');
-    final audioUploadRequest = http.MultipartRequest('Post', addressUri);
-    final file = await http.MultipartFile.fromString('Audio', audioFile.path);
+    var request = http.MultipartRequest("Post", addressUri);
+    request.fields['AudioFile'] = "name"; //Depends on fastAPI
 
-    //  var request = http.MultipartFile.Request('POST', addressUri);
-    //  var picture = http.MultipartFile.fromBytes('Audio', (await audioFile).)
-    // request.files.add
+    var AudioF = http.MultipartFile.fromBytes(
+        'audio', (await rootBundle.load(audioFile.path)).buffer.asUint8List(),
+        filename: 'AudF.wav');
+    request.files.add(AudioF);
+
+    var response = await request.send();
+    var responseData = await response.stream.toBytes();
+    var result = String.fromCharCodes(responseData);
+    print(result);
   }
 
   @override
