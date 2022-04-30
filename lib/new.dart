@@ -53,8 +53,8 @@ class _NewState extends State<New> {
                         borderRadius: BorderRadius.circular(20),
                         child: Image.network(
                           // Here when we connect the fastAPI i will remove this http from here and uncomment the widget.url
-                          'https://i1.sndcdn.com/artworks-000207412380-slycmh-t500x500.jpg',
-                          //widget.url,
+                          // 'https://i1.sndcdn.com/artworks-000207412380-slycmh-t500x500.jpg',
+                          widget.url,
                           fit: BoxFit.cover,
                         )),
                   ),

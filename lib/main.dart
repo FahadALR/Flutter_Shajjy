@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -56,48 +57,41 @@ class _MyAppState extends State<MyApp> {
 
   final recorder = FlutterSoundRecorder();
   bool isRecorderReady = false;
-  int seconds = 8;
+  int seconds = 10;
+  void sendMethod() async {
+    setState(() {
+      isListening = !isListening;
+    });
+
+    if (recorder.isRecording) {
+      await stop();
+    }
+    setState(() {});
+  }
+
   void startTimer() {
     timer = Timer.periodic(Duration(seconds: 1), (_) async {
       if (seconds > 0) {
         setState(() {
           seconds--;
         });
-        if (seconds == 6) {
-          print('This is the 10');
-          // here we call the fastApi
-          // setState(() {
-          //   isListening=!isListening;
-          // });
-          // timer!.cancel();
-          // await stop();
-          // } else if (seconds == 8) {
-          //   //  here we call the fastApi
-          //   // setState(() {
-          //   //   isListening=!isListening;
-          //   // });
-          //   // timer!.cancel();
-          //   // await stop();
-        } else if (seconds == 6) {
-          print('This is the 6');
-          //   //   here we call the fastApi
-          //   // setState(() {
-          //   //   isListening=!isListening;
-          //   // });
-          //   // timer!.cancel();
-          //   // await stop();
+        if (seconds == 7) {
+          print('This is the 8');
+          sendMethod();
+          await record();
+
+          setState(() {
+            isListening = !isListening;
+          });
         } else if (seconds == 4) {
-          print('This is the 4');
-          //   //  here we call the fastApi
-          //   // setState(() {
-          //   //   isListening=!isListening;
-          //   // });
-          //   // timer!.cancel();
-          //   // await stop();
-        } else if (seconds == 2) {
-          print('This is the 2');
-          //   // here we here we call the fastApi
-          //
+          print('This is the 6');
+          sendMethod();
+          await record();
+          setState(() {
+            isListening = !isListening;
+          });
+        } else if (seconds == 1) {
+          print('This is the 1');
         }
       } else {
         setState(() {
@@ -106,6 +100,7 @@ class _MyAppState extends State<MyApp> {
         timer?.cancel();
         await stop();
         print('This is the ZERO');
+        seconds = 10;
       }
     });
   }
@@ -113,7 +108,7 @@ class _MyAppState extends State<MyApp> {
   Future record() async {
     if (!isRecorderReady) return;
     await recorder.startRecorder(
-      toFile: 'audio',
+      toFile: 'audio.aac',
     );
   }
 
@@ -122,8 +117,13 @@ class _MyAppState extends State<MyApp> {
     final path = await recorder.stopRecorder();
     final audioFiles = File(path!);
     print('Recorder Audio: $audioFiles');
-    //Here we will change it to the FastAPI instead of firebase which was just for testing
     uploadAudioToAPI(audioFiles);
+  }
+
+  Future stop2() async {
+    if (!isRecorderReady) return;
+    final path = await recorder.stopRecorder();
+    print('The Audio is stopped: ');
   }
 
   Future initRecorder() async {
@@ -137,46 +137,17 @@ class _MyAppState extends State<MyApp> {
     //  recorder.setSubscriptionDuration(Duration(milliseconds: 200));
   }
 
-  // uploadAudioToDB(File audioFile) async {
-  //   try {
-  //     final ref = FirebaseStorage.instance
-  //         .ref()
-  //         .child('chatAudios/${DateTime.now().millisecondsSinceEpoch}');
-  //     final uploadTask = ref.putFile(audioFile);
-  //     //  Uri downloadUrl = (await uploadTask.onComplete).uploadSessionUri;
-  //     var downloadUrl = (await uploadTask).ref.getDownloadURL();
-  //     final String url = await downloadUrl;
-  //
-  //     await FirebaseFirestore.instance
-  //         .collection('audio')
-  //         .doc()
-  //         .set({'audio': url, 'value': '1'}).whenComplete(() {
-  //       setState(() {
-  //         isLoading = false;
-  //       });
-  //     });
-  //     print("url:$url");
-  //     return url;
-  //   } catch (error) {
-  //     print("error$error");
-  //   }
-  // }
-
-  uploadAudioToAPI(File audioFile) async {
-    //Inside parse we will put the fastAPI http link
-    Uri addressUri = Uri.parse('https:\\fastapi.com');
-    var request = http.MultipartRequest("Post", addressUri);
-    request.fields['AudioFile'] = "name"; //Depends on fastAPI
-
-    var AudioF = http.MultipartFile.fromBytes(
-        'audio', (await rootBundle.load(audioFile.path)).buffer.asUint8List(),
-        filename: 'AudF.wav');
-    request.files.add(AudioF);
-
-    var response = await request.send();
-    var responseData = await response.stream.toBytes();
-    var result = String.fromCharCodes(responseData);
-    print(result);
+  Future uploadAudioToAPI(File audioFile) async {
+    final url = Uri.http("10.0.2.2:8000", "predict");
+    var request = http.MultipartRequest('POST', url);
+    request.files
+        .add(await http.MultipartFile.fromPath("file", audioFile.path));
+    request.headers.addAll({"content": "multipart/form-data"});
+    print(url);
+    var response1 = await request.send();
+    print(response1.headers);
+    // String res = response1.body;
+    if (response1.statusCode == 200) print('Uploaded!');
   }
 
   @override
@@ -374,12 +345,6 @@ class _MyAppState extends State<MyApp> {
                             onTap: () async {
                               setState(() {
                                 isListening = !isListening;
-                                if (isListening)
-                                  startTimer();
-                                else {
-                                  timer?.cancel();
-                                  seconds = 8;
-                                }
                               });
 
                               if (recorder.isRecording) {
@@ -388,6 +353,13 @@ class _MyAppState extends State<MyApp> {
                                 await record();
                               }
                               setState(() {});
+                              if (isListening)
+                                startTimer();
+                              else {
+                                timer?.cancel();
+                                seconds = 10;
+                                stop2();
+                              }
                             },
                             child: AvatarGlow(
                               endRadius: 120,
