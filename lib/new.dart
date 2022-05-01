@@ -5,12 +5,13 @@ import 'package:shajyy/main.dart';
 
 class New extends StatefulWidget {
   // ignore: non_constant_identifier_names
-  String Arabicname, url, Englishname, id;
+  String arabicname, url;
+  String? englishname, id;
   New({
     required this.id,
     required this.url,
-    required this.Englishname,
-    required this.Arabicname,
+    this.englishname,
+    required this.arabicname,
   });
 
   @override
@@ -78,8 +79,8 @@ class _NewState extends State<New> {
                     ]),
                 child: Center(
                   child: Text(
-                    'عبدالرحمن العوسي',
-                    // widget.Arabicname,
+                    //'عبدالرحمن العوسي',
+                    widget.arabicname,
                     style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -90,14 +91,14 @@ class _NewState extends State<New> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    'Accuracy Rate : 85% ',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Color(0XFFA9954D),
-                    ),
-                  ),
+                  // Text(
+                  //   'Accuracy Rate : 85% ',
+                  //   style: TextStyle(
+                  //     fontWeight: FontWeight.bold,
+                  //     fontSize: 14,
+                  //     color: Color(0XFFA9954D),
+                  //   ),
+                  // ),
                 ],
               ),
               SizedBox(
@@ -109,7 +110,7 @@ class _NewState extends State<New> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      'القراء المقترحين',
+                      'القراء المشابهين',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -139,8 +140,8 @@ class _NewState extends State<New> {
                               borderRadius: BorderRadius.circular(10),
                               child: Image.network(
                                 // Here also when we connect the fastAPI i will remove this http from here and uncomment the widget.url
-                                'https://www.alwatan.com.sa/uploads/images/2019/05/25/319187.jpg',
-                                //widget.url,
+                                //'https://www.alwatan.com.sa/uploads/images/2019/05/25/319187.jpg',
+                                widget.url,
                                 fit: BoxFit.cover,
                               )),
                         ),
@@ -155,7 +156,8 @@ class _NewState extends State<New> {
                               borderRadius: BorderRadius.circular(10)),
                           child: Center(
                               child: Text(
-                            'ٔحمد الطرابلسي',
+                            //'ٔحمد الطرابلسي',
+                            widget.arabicname,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           )),
@@ -164,14 +166,14 @@ class _NewState extends State<New> {
                           height: 30,
                           width: MediaQuery.of(context).size.width / 2.5,
                           decoration: BoxDecoration(),
-                          child: Center(
-                              child: Text(
-                            'Accuracy Rate : 35 %',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0XFFA9954D),
-                            ),
-                          )),
+                          // child: Center(
+                          //     child: Text(
+                          //   'Accuracy Rate : 35 %',
+                          //   style: TextStyle(
+                          //     fontSize: 13,
+                          //     color: Color(0XFFA9954D),
+                          //   ),
+                          // )),
                         ),
                       ],
                     ),
@@ -209,14 +211,14 @@ class _NewState extends State<New> {
                           height: 30,
                           width: MediaQuery.of(context).size.width / 2.5,
                           decoration: BoxDecoration(),
-                          child: Center(
-                              child: Text(
-                            'Accuracy Rate : 65 %',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0XFFA9954D),
-                            ),
-                          )),
+                          // child: Center(
+                          //     child: Text(
+                          //   'Accuracy Rate : 65 %',
+                          //   style: TextStyle(
+                          //     fontSize: 13,
+                          //     color: Color(0XFFA9954D),
+                          //   ),
+                          // )),
                         ),
                       ],
                     ),

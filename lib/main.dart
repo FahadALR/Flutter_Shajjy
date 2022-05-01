@@ -7,13 +7,13 @@ import 'dart:ui';
 import 'package:animations/animations.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
-import 'package:flutter_sound/flutter_sound.dart';
-import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+import 'package:flutter_sound/flutter_sound.dart' as rec;
+//import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,10 +23,12 @@ import 'package:shajyy/new.dart';
 import 'package:wave/config.dart';
 import 'package:wave/wave.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main(List<String> args) async {
-  await WidgetsFlutterBinding.ensureInitialized();
-  // Firebase.initializeApp();
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MaterialApp(
     home: MyApp(),
     title: 'Shajyy',
@@ -45,26 +47,25 @@ class _MyAppState extends State<MyApp> {
   // initial values
   Timer? timer;
   String fid = '';
-  String Arabicname = 'loading';
-  String Englishname = 'loading';
-  String url = 'loading';
+  String arabicname = 'loading';
+  String englishname = 'loading';
+  String pageUrl = 'loading';
   String? text;
   bool isListening = false;
   bool isLoading = false;
   bool timerSt = false;
+
   // This controller is for handle the voice which we say
   TextEditingController controller = TextEditingController();
 
-  final recorder = FlutterSoundRecorder();
+  final recorder = rec.FlutterSoundRecorder();
   bool isRecorderReady = false;
   int seconds = 10;
   void sendMethod() async {
-    setState(() {
-      isListening = !isListening;
-    });
-
     if (recorder.isRecording) {
       await stop();
+    } else {
+      await record();
     }
     setState(() {});
   }
@@ -75,30 +76,23 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           seconds--;
         });
-        if (seconds == 7) {
-          print('This is the 8');
-          sendMethod();
-          await record();
-
-          setState(() {
-            isListening = !isListening;
-          });
-        } else if (seconds == 4) {
+        if (seconds == 6) {
+          if (recorder.isRecording) stop();
+          if (!recorder.isRecording) await record();
           print('This is the 6');
-          sendMethod();
-          await record();
-          setState(() {
-            isListening = !isListening;
-          });
-        } else if (seconds == 1) {
-          print('This is the 1');
         }
+        // if (seconds == 2) {
+        //   stop();
+        //   // if (recorder.isRecording) stop();
+        //   //if (!recorder.isRecording) await record();
+        //   print('This is the 2');
+        // }
       } else {
         setState(() {
           isListening = !isListening;
         });
         timer?.cancel();
-        await stop();
+        if (recorder.isRecording) stop2();
         print('This is the ZERO');
         seconds = 10;
       }
@@ -107,8 +101,11 @@ class _MyAppState extends State<MyApp> {
 
   Future record() async {
     if (!isRecorderReady) return;
+    var tempDir = await getTemporaryDirectory();
+    String path = '${tempDir.path}/audio.aac';
     await recorder.startRecorder(
-      toFile: 'audio.aac',
+      toFile: path,
+      //  codec: rec.Codec.pcm16WAV,
     );
   }
 
@@ -134,20 +131,57 @@ class _MyAppState extends State<MyApp> {
     }
     await recorder.openRecorder();
     isRecorderReady = true;
-    //  recorder.setSubscriptionDuration(Duration(milliseconds: 200));
+    recorder.setSubscriptionDuration(Duration(milliseconds: 300));
   }
 
   Future uploadAudioToAPI(File audioFile) async {
     final url = Uri.http("10.0.2.2:8000", "predict");
     var request = http.MultipartRequest('POST', url);
-    request.files
-        .add(await http.MultipartFile.fromPath("file", audioFile.path));
+    var audio = await (http.MultipartFile.fromPath("file", audioFile.path,
+        contentType: new MediaType('audio', 'wav'), filename: 'test.wav'));
+    request.files.add(audio);
+    // request.files.add(await http.MultipartFile.fromPath("file", audioFile.path,
+    //     contentType: new MediaType('audio', 'wav'), filename: 'test.wav'));
     request.headers.addAll({"content": "multipart/form-data"});
     print(url);
-    var response1 = await request.send();
-    print(response1.headers);
-    // String res = response1.body;
-    if (response1.statusCode == 200) print('Uploaded!');
+    print(audio.contentType);
+    http.Response response =
+        await http.Response.fromStream(await request.send());
+    if (response.statusCode == 200) {
+      print(
+          'Uploaded! ${audio.filename}  ////${audio.length}//// ${response.body}');
+    }
+    // Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (context) => New(
+    //         id: fid,
+    //         url: pageUrl,
+    //         englishname: englishname,
+    //         arabicname: arabicname)));
+  }
+
+  Future uploadAsset(File audioFile) async {
+    final url = Uri.http("10.0.2.2:8000", "predict");
+    var request = http.MultipartRequest('POST', url);
+    var audio = http.MultipartFile.fromBytes('file',
+        (await rootBundle.load("assets/justTest.wav")).buffer.asInt8List(),
+        filename: 'test.wav', contentType: new MediaType('audio', 'wav'));
+    request.files.add(audio);
+    request.headers.addAll({"content": "multipart/form-data"});
+    print(url);
+    http.Response response =
+        await http.Response.fromStream(await request.send());
+    var temp = jsonDecode(response.body)['prediction'];
+    List<String>? tags = temp != null ? List.from(temp) : null;
+    if (response.statusCode == 200) {
+      print(">> " + tags![0]);
+      print(' //////// ${audio.contentType}');
+    }
+    // Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (context) => New(
+    //         id: fid,
+    //         url: pageUrl,
+    //         englishname: englishname,
+    //         arabicname: arabicname)));
   }
 
   @override
@@ -342,17 +376,15 @@ class _MyAppState extends State<MyApp> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           InkWell(
-                            onTap: () async {
+                            onTap: ()
+                                // async {
+                                //  uploadAsset(File('assets/justTest.wav'));
+                                // },
+                                async {
                               setState(() {
                                 isListening = !isListening;
                               });
 
-                              if (recorder.isRecording) {
-                                await stop();
-                              } else {
-                                await record();
-                              }
-                              setState(() {});
                               if (isListening)
                                 startTimer();
                               else {
@@ -360,6 +392,12 @@ class _MyAppState extends State<MyApp> {
                                 seconds = 10;
                                 stop2();
                               }
+                              if (recorder.isRecording) {
+                                await stop2();
+                              } else {
+                                await record();
+                              }
+                              setState(() {});
                             },
                             child: AvatarGlow(
                               endRadius: 120,
@@ -440,9 +478,9 @@ class _MyAppState extends State<MyApp> {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) => New(
                                         id: fid,
-                                        url: url,
-                                        Englishname: Englishname,
-                                        Arabicname: Arabicname)));
+                                        url: pageUrl,
+                                        englishname: englishname,
+                                        arabicname: arabicname)));
                               },
                               child: Container(
                                 height: 50,
