@@ -1,4 +1,5 @@
-import 'package:animations/animations.dart';
+import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shajyy/main.dart';
 
@@ -20,71 +21,75 @@ class _ErrorPageState extends State<ErrorPage> {
           // ignore: prefer_const_constructors
           Icon(
             Icons.error,
-            color: Color(0XFFA9954D),
+            color: const Color(0XFFA9954D),
             size: 55,
           ),
-          SizedBox(
+          const SizedBox(
             height: 3,
           ),
 
-          Text(
+          const Text(
             'لاتوجد نتيجة',
             style: TextStyle(
                 color: Color(0XFFA9954D),
                 fontWeight: FontWeight.bold,
                 fontSize: 17),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           // ignore: prefer_const_constructors
           Text(
             'حاول تشغيل الصوت بشكل واضح وبدون ضوضاء -',
-            style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+            children: const [
               Text(
                 ' قد يكون القارئ الذي تستعلم عنه غير موجود في قاعدةالبيانات -',
                 overflow: TextOverflow.clip,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                     color: Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14),
+                    fontSize: 15),
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 60,
           ),
           InkWell(
             onTap: () {
-              Navigator.of(context).pop();
+              Navigator.pushNamedAndRemoveUntil(context, 'Home', (_) => false);
             },
             child: Container(
-              height: 60,
+              height: 80,
               width: 60,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   shape: BoxShape.circle, color: Color(0XFFA9954D)),
-              child: Icon(
+              child: const Icon(
                 Icons.refresh,
                 color: Colors.white,
-                size: 35,
+                size: 40,
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 2,
           ),
-          Text(
+          const Text(
             'حاول مرة أخرى',
+            textAlign: TextAlign.center,
             style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                color: Color(0XFFA9954D),
+                fontWeight: FontWeight.bold,
+                fontSize: 15),
           ),
         ],
       ),

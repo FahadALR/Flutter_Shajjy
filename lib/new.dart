@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
@@ -5,13 +7,15 @@ import 'package:shajyy/main.dart';
 
 class New extends StatefulWidget {
   // ignore: non_constant_identifier_names
-  String arabicname, url;
-  String? englishname, id;
+
+  String url0, url1, url2, name0, name1, name2;
   New({
-    required this.id,
-    required this.url,
-    this.englishname,
-    required this.arabicname,
+    required this.name0,
+    required this.name1,
+    required this.name2,
+    required this.url0,
+    required this.url1,
+    required this.url2,
   });
 
   @override
@@ -41,25 +45,45 @@ class _NewState extends State<New> {
           Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(
-                height: 50,
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    height: MediaQuery.of(context).size.height / 3,
-                    width: MediaQuery.of(context).size.width / 1.5,
-                    child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.network(
-                          // Here when we connect the fastAPI i will remove this http from here and uncomment the widget.url
-                          // 'https://i1.sndcdn.com/artworks-000207412380-slycmh-t500x500.jpg',
-                          widget.url,
-                          fit: BoxFit.cover,
-                        )),
+              if (Platform.isAndroid)
+                IconButton(
+                  alignment: Alignment.topLeft,
+                  padding: const EdgeInsets.fromLTRB(370, 14.5, 0, 0),
+                  iconSize: 40,
+                  icon: const Icon(
+                    Icons.arrow_forward,
+                    color: Color(0XFF413420),
                   ),
-                ],
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, 'Home', (_) => false);
+                  },
+                ),
+              if (Platform.isIOS)
+                IconButton(
+                  alignment: Alignment.topLeft,
+                  padding: const EdgeInsets.fromLTRB(375, 17.5, 0, 0),
+                  iconSize: 40,
+                  icon: const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Color(0XFF413420),
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, 'Home', (_) => false);
+                  },
+                ),
+              Container(
+                height: MediaQuery.of(context).size.height / 3,
+                width: MediaQuery.of(context).size.width / 1.5,
+                child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(
+                      // Here when we connect the fastAPI i will remove this http from here and uncomment the widget.url
+                      // 'https://i1.sndcdn.com/artworks-000207412380-slycmh-t500x500.jpg',
+                      widget.url0,
+                      fit: BoxFit.cover,
+                    )),
               ),
               SizedBox(
                 height: 20,
@@ -80,7 +104,7 @@ class _NewState extends State<New> {
                 child: Center(
                   child: Text(
                     //'عبدالرحمن العوسي',
-                    widget.arabicname,
+                    widget.name0,
                     style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -88,35 +112,26 @@ class _NewState extends State<New> {
               SizedBox(
                 height: 10,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Text(
-                  //   'Accuracy Rate : 85% ',
-                  //   style: TextStyle(
-                  //     fontWeight: FontWeight.bold,
-                  //     fontSize: 14,
-                  //     color: Color(0XFFA9954D),
-                  //   ),
-                  // ),
-                ],
-              ),
               SizedBox(
                 height: 20,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
+                child: Container(
+                  height: 30,
+                  width: MediaQuery.of(context).size.width / 2.5,
+                  decoration: BoxDecoration(
+                      color: Color(0XFFD4DD9C),
+                      borderRadius: BorderRadius.circular(10)),
+                  child: Center(
+                    child: Text(
                       'القراء المشابهين',
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 16,
                           color: Colors.grey.shade800),
                     ),
-                  ],
+                  ),
                 ),
               ),
               SizedBox(
@@ -141,7 +156,7 @@ class _NewState extends State<New> {
                               child: Image.network(
                                 // Here also when we connect the fastAPI i will remove this http from here and uncomment the widget.url
                                 //'https://www.alwatan.com.sa/uploads/images/2019/05/25/319187.jpg',
-                                widget.url,
+                                widget.url1,
                                 fit: BoxFit.cover,
                               )),
                         ),
@@ -157,23 +172,10 @@ class _NewState extends State<New> {
                           child: Center(
                               child: Text(
                             //'ٔحمد الطرابلسي',
-                            widget.arabicname,
+                            widget.name1,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           )),
-                        ),
-                        Container(
-                          height: 30,
-                          width: MediaQuery.of(context).size.width / 2.5,
-                          decoration: BoxDecoration(),
-                          // child: Center(
-                          //     child: Text(
-                          //   'Accuracy Rate : 35 %',
-                          //   style: TextStyle(
-                          //     fontSize: 13,
-                          //     color: Color(0XFFA9954D),
-                          //   ),
-                          // )),
                         ),
                       ],
                     ),
@@ -188,7 +190,7 @@ class _NewState extends State<New> {
                             child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: Image.network(
-                                  'https://i1.sndcdn.com/artworks-989Z8BJKL2lKwOla-t8jhzA-t500x500.jpg',
+                                  widget.url2,
                                   fit: BoxFit.cover,
                                 ))),
                         SizedBox(
@@ -202,23 +204,10 @@ class _NewState extends State<New> {
                               borderRadius: BorderRadius.circular(10)),
                           child: Center(
                               child: Text(
-                            'احمد الحذيفي',
+                            widget.name2,
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
                           )),
-                        ),
-                        Container(
-                          height: 30,
-                          width: MediaQuery.of(context).size.width / 2.5,
-                          decoration: BoxDecoration(),
-                          // child: Center(
-                          //     child: Text(
-                          //   'Accuracy Rate : 65 %',
-                          //   style: TextStyle(
-                          //     fontSize: 13,
-                          //     color: Color(0XFFA9954D),
-                          //   ),
-                          // )),
                         ),
                       ],
                     ),

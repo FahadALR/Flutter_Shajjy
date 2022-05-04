@@ -12,8 +12,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_custom_clippers/flutter_custom_clippers.dart';
-import 'package:flutter_sound/flutter_sound.dart' as rec;
-//import 'package:flutter_sound/public/flutter_sound_recorder.dart';
+//import 'package:flutter_sound/flutter_sound.dart' as rec;
+import 'package:flutter_sound_lite/flutter_sound.dart' as rec;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -31,13 +31,17 @@ void main(List<String> args) async {
   await Firebase.initializeApp();
   runApp(MaterialApp(
     home: MyApp(),
+    routes: {
+      'Home': (context) => MyApp(),
+      'error': (context) => ErrorPage(),
+    },
     title: 'Shajyy',
     debugShowCheckedModeBanner: false,
   ));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({Key? key}) : super(key: key);
+  //const MyApp({Key? key}) : super(key: key);
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -46,21 +50,25 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   // initial values
   Timer? timer;
-  String fid = '';
-  String arabicname = 'loading';
-  String englishname = 'loading';
-  String pageUrl = 'loading';
-  String? text;
+
   bool isListening = false;
   bool isLoading = false;
   bool timerSt = false;
+  String name0 = 'loading';
+  String name1 = 'loading';
+  String name2 = 'loading';
+  String url0 = 'loading';
+  String url1 = 'loading';
+  String url2 = 'loading';
 
   // This controller is for handle the voice which we say
   TextEditingController controller = TextEditingController();
 
   final recorder = rec.FlutterSoundRecorder();
   bool isRecorderReady = false;
-  int seconds = 10;
+  int seconds = 14;
+  late String outputFile;
+
   void sendMethod() async {
     if (recorder.isRecording) {
       await stop();
@@ -76,17 +84,24 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           seconds--;
         });
-        if (seconds == 6) {
+
+        if (seconds == 10) {
           if (recorder.isRecording) stop();
           if (!recorder.isRecording) await record();
-          print('This is the 6');
+          print('This is the 5');
         }
-        // if (seconds == 2) {
-        //   stop();
-        //   // if (recorder.isRecording) stop();
-        //   //if (!recorder.isRecording) await record();
-        //   print('This is the 2');
-        // }
+        if (seconds == 6 && name0 == 'none') {
+          stop();
+          if (recorder.isRecording) stop();
+          if (!recorder.isRecording) await record();
+          print('This is the 2');
+        }
+        if (seconds == 2) {
+          stop();
+          if (recorder.isRecording) stop();
+          if (!recorder.isRecording) await record();
+          print('This is the 2');
+        }
       } else {
         setState(() {
           isListening = !isListening;
@@ -94,25 +109,30 @@ class _MyAppState extends State<MyApp> {
         timer?.cancel();
         if (recorder.isRecording) stop2();
         print('This is the ZERO');
-        seconds = 10;
+        seconds = 12;
       }
     });
   }
 
   Future record() async {
     if (!isRecorderReady) return;
-    var tempDir = await getTemporaryDirectory();
-    String path = '${tempDir.path}/audio.aac';
+    Directory tempDir = await getTemporaryDirectory();
+    outputFile = '${tempDir.path}/myFile.wav';
+    print('------------------------------ $outputFile');
     await recorder.startRecorder(
-      toFile: path,
-      //  codec: rec.Codec.pcm16WAV,
+      toFile: outputFile,
+      codec: rec.Codec.pcm16WAV,
+      sampleRate: 41000,
+      numChannels: 1,
     );
   }
 
   Future stop() async {
     if (!isRecorderReady) return;
-    final path = await recorder.stopRecorder();
-    final audioFiles = File(path!);
+
+    var path = await recorder.stopRecorder();
+    print('Recorder Audio: $path');
+    final audioFiles = File(outputFile);
     print('Recorder Audio: $audioFiles');
     uploadAudioToAPI(audioFiles);
   }
@@ -120,7 +140,7 @@ class _MyAppState extends State<MyApp> {
   Future stop2() async {
     if (!isRecorderReady) return;
     final path = await recorder.stopRecorder();
-    print('The Audio is stopped: ');
+    print('The Audio is stopped: $path');
   }
 
   Future initRecorder() async {
@@ -129,7 +149,8 @@ class _MyAppState extends State<MyApp> {
     if (status != PermissionStatus.granted) {
       throw 'Microphone permission not granted';
     }
-    await recorder.openRecorder();
+
+    await recorder.openAudioSession();
     isRecorderReady = true;
     recorder.setSubscriptionDuration(Duration(milliseconds: 300));
   }
@@ -137,51 +158,145 @@ class _MyAppState extends State<MyApp> {
   Future uploadAudioToAPI(File audioFile) async {
     final url = Uri.http("10.0.2.2:8000", "predict");
     var request = http.MultipartRequest('POST', url);
-    var audio = await (http.MultipartFile.fromPath("file", audioFile.path,
-        contentType: new MediaType('audio', 'wav'), filename: 'test.wav'));
+
+    var audio = await (http.MultipartFile.fromPath('file', audioFile.path,
+        filename: 'myFile.wav', contentType: new MediaType('audio', 'wav')));
     request.files.add(audio);
-    // request.files.add(await http.MultipartFile.fromPath("file", audioFile.path,
-    //     contentType: new MediaType('audio', 'wav'), filename: 'test.wav'));
+
     request.headers.addAll({"content": "multipart/form-data"});
     print(url);
     print(audio.contentType);
     http.Response response =
         await http.Response.fromStream(await request.send());
     if (response.statusCode == 200) {
-      print(
-          'Uploaded! ${audio.filename}  ////${audio.length}//// ${response.body}');
+      var temp = jsonDecode(response.body)['prediction'];
+      print(temp);
+      if ((temp == 'none')) {
+        Navigator.pushNamed(context, 'error');
+      } else {
+        setState(() {});
+        stop2();
+        isLoading = false;
+        timer?.cancel();
+
+        List<String>? tags = temp != null ? List.from(temp) : null;
+        print(">> " + tags![0]);
+        print('The result from the model is ${response.body}');
+        print(' The suggested IDs of the reciters:- ${temp}');
+        print(' The id of the main reciter:-- ${temp[0]}');
+        await FirebaseFirestore.instance
+            .collection('Data')
+            .where("data no ", isEqualTo: temp[0])
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          querySnapshot.docs.forEach((doc) {
+            name0 = doc["name"];
+            url0 = doc["url"];
+          });
+        });
+        await FirebaseFirestore.instance
+            .collection('Data')
+            .where("data no ", isEqualTo: temp[1])
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          querySnapshot.docs.forEach((doc) {
+            name1 = doc["name"];
+            url1 = doc["url"];
+          });
+        });
+        await FirebaseFirestore.instance
+            .collection('Data')
+            .where("data no ", isEqualTo: temp[2])
+            .get()
+            .then((QuerySnapshot querySnapshot) {
+          querySnapshot.docs.forEach((doc) {
+            name2 = doc["name"];
+            url2 = doc["url"];
+
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => New(
+                      name0: name0,
+                      name1: name1,
+                      name2: name2,
+                      url0: url0,
+                      url1: url1,
+                      url2: url2,
+                    )));
+          });
+        });
+      }
     }
-    // Navigator.of(context).push(MaterialPageRoute(
-    //     builder: (context) => New(
-    //         id: fid,
-    //         url: pageUrl,
-    //         englishname: englishname,
-    //         arabicname: arabicname)));
   }
 
   Future uploadAsset(File audioFile) async {
     final url = Uri.http("10.0.2.2:8000", "predict");
     var request = http.MultipartRequest('POST', url);
+
     var audio = http.MultipartFile.fromBytes('file',
         (await rootBundle.load("assets/justTest.wav")).buffer.asInt8List(),
         filename: 'test.wav', contentType: new MediaType('audio', 'wav'));
+    setState(() {
+      isLoading = true;
+    });
     request.files.add(audio);
     request.headers.addAll({"content": "multipart/form-data"});
     print(url);
     http.Response response =
         await http.Response.fromStream(await request.send());
+    // setState(() {
+    //   isLoading = true;
+    // });
     var temp = jsonDecode(response.body)['prediction'];
     List<String>? tags = temp != null ? List.from(temp) : null;
     if (response.statusCode == 200) {
       print(">> " + tags![0]);
-      print(' //////// ${audio.contentType}');
+      print('The result from the model is ${response.body}');
+      print(' The suggested IDs of the reciters:- ${temp}');
+      print(' The id of the main reciter:-- ${temp[0]}');
+
+      await FirebaseFirestore.instance
+          .collection('Data')
+          .where("data no ", isEqualTo: temp[0])
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          name0 = doc["name"];
+          url0 = doc["url"];
+        });
+      });
+      await FirebaseFirestore.instance
+          .collection('Data')
+          .where("data no ", isEqualTo: temp[1])
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          name1 = doc["name"];
+          url1 = doc["url"];
+        });
+      });
+      await FirebaseFirestore.instance
+          .collection('Data')
+          .where("data no ", isEqualTo: temp[2])
+          .get()
+          .then((QuerySnapshot querySnapshot) {
+        querySnapshot.docs.forEach((doc) {
+          name2 = doc["name"];
+          url2 = doc["url"];
+        });
+      });
+      if (identical(name0, 'none')) {
+        Navigator.pushNamed(context, 'error');
+      }
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (context) => New(
+                name0: name0,
+                name1: name1,
+                name2: name2,
+                url0: url0,
+                url1: url1,
+                url2: url2,
+              )));
     }
-    // Navigator.of(context).push(MaterialPageRoute(
-    //     builder: (context) => New(
-    //         id: fid,
-    //         url: pageUrl,
-    //         englishname: englishname,
-    //         arabicname: arabicname)));
   }
 
   @override
@@ -192,7 +307,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   void dispose() {
-    recorder.closeRecorder();
+    recorder.closeAudioSession();
     super.dispose();
   }
 
@@ -231,8 +346,8 @@ class _MyAppState extends State<MyApp> {
                           width: 10,
                         ),
                         Text(
-                          'ارجوك انتظر',
-                          style: TextStyle(fontSize: 17),
+                          'الرجاء الانتظار',
+                          style: TextStyle(fontSize: 20),
                         ),
                       ],
                     ),
@@ -331,7 +446,7 @@ class _MyAppState extends State<MyApp> {
                               width: MediaQuery.of(context).size.width / 1.5,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                         color: Color(0XFFD4DD9C),
                                         spreadRadius: 5,
@@ -363,7 +478,10 @@ class _MyAppState extends State<MyApp> {
                           gradient: LinearGradient(
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
-                              colors: [Color(0XFFA9954D), Color(0XFFA9954D)])),
+                              colors: const [
+                            Color(0XFFA9954D),
+                            Color(0XFFA9954D)
+                          ])),
                     ),
                   ),
                   Column(
@@ -378,16 +496,17 @@ class _MyAppState extends State<MyApp> {
                           InkWell(
                             onTap: ()
                                 // async {
-                                //  uploadAsset(File('assets/justTest.wav'));
+                                //   uploadAsset(File('assets/justTest.wav'));
                                 // },
+                                //
                                 async {
                               setState(() {
                                 isListening = !isListening;
                               });
 
-                              if (isListening)
+                              if (isListening) {
                                 startTimer();
-                              else {
+                              } else {
                                 timer?.cancel();
                                 seconds = 10;
                                 stop2();
@@ -466,63 +585,6 @@ class _MyAppState extends State<MyApp> {
                     ],
                   ),
 
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Row(
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => New(
-                                        id: fid,
-                                        url: pageUrl,
-                                        englishname: englishname,
-                                        arabicname: arabicname)));
-                              },
-                              child: Container(
-                                height: 50,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Center(
-                                  child: Text(
-                                    'Only for testing go to answer page(click this)',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (context) => Audio()));
-                              },
-                              child: Container(
-                                height: 50,
-                                width: 100,
-                                decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(10)),
-                                child: Center(
-                                  child: Text(
-                                    'Only for testing go to audio page(click here)',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                   !isListening
                       ? Container()
                       : Column(
