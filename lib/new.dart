@@ -9,6 +9,7 @@ class New extends StatefulWidget {
   // ignore: non_constant_identifier_names
 
   String url0, url1, url2, name0, name1, name2;
+
   New({
     required this.name0,
     required this.name1,

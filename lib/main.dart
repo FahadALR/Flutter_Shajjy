@@ -211,7 +211,7 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future uploadAsset(File audioFile) async {
+  Future uploadAsset() async {
     final url = Uri.http("10.0.2.2:8000", "predict");
     var request = http.MultipartRequest('POST', url);
 
@@ -479,7 +479,7 @@ class _MyAppState extends State<MyApp> {
                           InkWell(
                             onTap: ()
                                 // async {
-                                //   uploadAsset(File('assets/justTest.wav'));
+                                //   uploadAsset();
                                 // },
 
                                 async {
@@ -589,7 +589,33 @@ class _MyAppState extends State<MyApp> {
                               ),
                             ),
                           ],
-                        )
+                        ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            uploadAsset();
+                          },
+                          child: Container(
+                            height: 50,
+                            width: 200,
+                            decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10)),
+                            child: Center(
+                              child: Text(
+                                ' Only for testing File testing',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                 ]),
     );
   }
