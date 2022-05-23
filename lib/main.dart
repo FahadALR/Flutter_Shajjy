@@ -18,8 +18,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shajyy/audioplayer.dart';
-import 'package:shajyy/errorpage.dart';
-import 'package:shajyy/new.dart';
+import 'package:shajyy/errorpage.dart'; //ERROR PAGE
+import 'package:shajyy/new.dart'; //ANSWER PAGE
 import 'package:wave/config.dart';
 import 'package:wave/wave.dart';
 import 'package:http/http.dart' as http;
@@ -49,11 +49,13 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   // initial values
-  Timer? timer;
 
   bool isListening = false;
   bool isLoading = false;
-  bool timerSt = false;
+  final recorder = rec.FlutterSoundRecorder();
+  bool isRecorderReady = false;
+  late String outputFile;
+
   String name0 = 'loading';
   String name1 = 'loading';
   String name2 = 'loading';
@@ -61,22 +63,10 @@ class _MyAppState extends State<MyApp> {
   String url1 = 'loading';
   String url2 = 'loading';
 
-  // This controller is for handle the voice which we say
   TextEditingController controller = TextEditingController();
-
-  final recorder = rec.FlutterSoundRecorder();
-  bool isRecorderReady = false;
-  int seconds = 14;
-  late String outputFile;
-
-  void sendMethod() async {
-    if (recorder.isRecording) {
-      await stop();
-    } else {
-      await record();
-    }
-    setState(() {});
-  }
+  int seconds = 14; //For the timer
+  bool timerSt = false;
+  Timer? timer;
 
   void startTimer() {
     timer = Timer.periodic(Duration(seconds: 1), (_) async {
@@ -88,19 +78,16 @@ class _MyAppState extends State<MyApp> {
         if (seconds == 10) {
           if (recorder.isRecording) stop();
           if (!recorder.isRecording) await record();
-          print('This is the 5');
         }
-        if (seconds == 6 && name0 == 'none') {
+        if (seconds == 6 && (name0 == 'none' || name0 == 'loading')) {
           stop();
           if (recorder.isRecording) stop();
           if (!recorder.isRecording) await record();
-          print('This is the 2');
         }
-        if (seconds == 2) {
+        if (seconds == 2 && (name0 == 'none' || name0 == 'loading')) {
           stop();
           if (recorder.isRecording) stop();
           if (!recorder.isRecording) await record();
-          print('This is the 2');
         }
       } else {
         setState(() {
@@ -108,8 +95,8 @@ class _MyAppState extends State<MyApp> {
         });
         timer?.cancel();
         if (recorder.isRecording) stop2();
-        print('This is the ZERO');
-        seconds = 12;
+        Navigator.pushNamed(context, 'error');
+        seconds = 14;
       }
     });
   }
@@ -122,7 +109,7 @@ class _MyAppState extends State<MyApp> {
     await recorder.startRecorder(
       toFile: outputFile,
       codec: rec.Codec.pcm16WAV,
-      sampleRate: 41000,
+      sampleRate: 22050,
       numChannels: 1,
     );
   }
@@ -157,7 +144,7 @@ class _MyAppState extends State<MyApp> {
 
   Future uploadAudioToAPI(File audioFile) async {
     final url = Uri.http("10.0.2.2:8000", "predict");
-    var request = http.MultipartRequest('POST', url);
+    final request = http.MultipartRequest('POST', url);
 
     var audio = await (http.MultipartFile.fromPath('file', audioFile.path,
         filename: 'myFile.wav', contentType: new MediaType('audio', 'wav')));
@@ -166,24 +153,20 @@ class _MyAppState extends State<MyApp> {
     request.headers.addAll({"content": "multipart/form-data"});
     print(url);
     print(audio.contentType);
+
     http.Response response =
         await http.Response.fromStream(await request.send());
     if (response.statusCode == 200) {
       var temp = jsonDecode(response.body)['prediction'];
-      print(temp);
-      if ((temp == 'none')) {
+
+      if ((temp == 'none') && seconds < 3) {
         Navigator.pushNamed(context, 'error');
-      } else {
         setState(() {});
         stop2();
         isLoading = false;
         timer?.cancel();
-
+      } else {
         List<String>? tags = temp != null ? List.from(temp) : null;
-        print(">> " + tags![0]);
-        print('The result from the model is ${response.body}');
-        print(' The suggested IDs of the reciters:- ${temp}');
-        print(' The id of the main reciter:-- ${temp[0]}');
         await FirebaseFirestore.instance
             .collection('Data')
             .where("data no ", isEqualTo: temp[0])
@@ -498,7 +481,7 @@ class _MyAppState extends State<MyApp> {
                                 // async {
                                 //   uploadAsset(File('assets/justTest.wav'));
                                 // },
-                                //
+
                                 async {
                               setState(() {
                                 isListening = !isListening;
@@ -508,7 +491,7 @@ class _MyAppState extends State<MyApp> {
                                 startTimer();
                               } else {
                                 timer?.cancel();
-                                seconds = 10;
+                                seconds = 14;
                                 stop2();
                               }
                               if (recorder.isRecording) {
