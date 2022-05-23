@@ -214,9 +214,18 @@ class _MyAppState extends State<MyApp> {
   Future uploadAsset() async {
     final url = Uri.http("10.0.2.2:8000", "predict");
     var request = http.MultipartRequest('POST', url);
-
+    //Alnafes1
+    //Alnafes2
+    //ahAlajmi
+    //hAlwahid
+    //iAlakdar
+    //kAlqahtani
+    //kAlqahtani2
+    //tAlremy
+    //Test1Abdulbaset
+    //Test2Abdulbaset
     var audio = http.MultipartFile.fromBytes('file',
-        (await rootBundle.load("assets/justTest.wav")).buffer.asInt8List(),
+        (await rootBundle.load("assets/kAlqahtani.wav")).buffer.asInt8List(),
         filename: 'test.wav', contentType: new MediaType('audio', 'wav'));
     setState(() {
       isLoading = true;
