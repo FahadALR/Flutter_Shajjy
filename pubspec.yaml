@@ -52,7 +52,6 @@ dependencies:
   http_parser: ^4.0.0
   flutter_sound_lite: ^8.5.0
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -80,7 +79,20 @@ flutter:
      - assets/Test1Abdulbaset.wav
      - assets/CantinaBand3.wav
      - assets/kAlqahtani.wav
-     - assets/
+     - assets/Aalnafes1.wav
+     - assets/Aalnafes2.wav
+     - assets/ahAlajmi.wav
+     - assets/hAlwahid.wav
+     - assets/ahAlajmi.wav
+     - assets/iAlakdar.wav
+     - assets/kAlqahtani.wav
+     - assets/kAlqahtani2.wav
+     - assets/Test1Abdulbaset.wav
+     - assets/Test2Abdulbaset.wav
+
+
+
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

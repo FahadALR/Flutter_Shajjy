@@ -8,6 +8,7 @@ import 'package:animations/animations.dart';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 // import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +18,6 @@ import 'package:flutter_sound_lite/flutter_sound.dart' as rec;
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:shajyy/audioplayer.dart';
 import 'package:shajyy/errorpage.dart'; //ERROR PAGE
 import 'package:shajyy/new.dart'; //ANSWER PAGE
 import 'package:wave/config.dart';
@@ -212,8 +212,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future uploadAsset() async {
-    final url = Uri.http("10.0.2.2:8000", "predict");
+    // final url1 = Uri.http("10.0.2.2:8000", "predict");
+    final url = Uri.parse('https://ff3b-159-0-221-233.eu.ngrok.io/predict');
     var request = http.MultipartRequest('POST', url);
+
     //Alnafes1
     //Alnafes2
     //ahAlajmi
@@ -224,12 +226,22 @@ class _MyAppState extends State<MyApp> {
     //tAlremy
     //Test1Abdulbaset
     //Test2Abdulbaset
-    var audio = http.MultipartFile.fromBytes('file',
-        (await rootBundle.load("assets/kAlqahtani.wav")).buffer.asInt8List(),
-        filename: 'test.wav', contentType: new MediaType('audio', 'wav'));
+    var audio = http.MultipartFile.fromBytes(
+        'file',
+        (await rootBundle.load('assets/Test1Abdulbaset.wav'))
+            .buffer
+            .asInt8List(),
+        filename: 'test.wav',
+        contentType: new MediaType('audio', 'wav'));
     setState(() {
       isLoading = true;
     });
+    // var audio = http.MultipartFile.fromBytes('file',
+    //     (await rootBundle.load("assets/kAlqahtani.wav")).buffer.asInt8List(),
+    //     filename: 'test.wav', contentType: new MediaType('audio', 'wav'));
+    // setState(() {
+    //   isLoading = true;
+    // });
     request.files.add(audio);
     request.headers.addAll({"content": "multipart/form-data"});
     print(url);
@@ -488,7 +500,7 @@ class _MyAppState extends State<MyApp> {
                           InkWell(
                             onTap: ()
                                 // async {
-                                //   uploadAsset();
+                                //   uploadAsset('lala');
                                 // },
 
                                 async {
